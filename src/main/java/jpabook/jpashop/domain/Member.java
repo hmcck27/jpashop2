@@ -12,10 +12,10 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class Member {
+public class Member extends BaseEntity{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "member_id")
     private Long id;
 
@@ -27,6 +27,10 @@ public class Member {
 
     @Column(name = "zipcode")
     private String zipcode;
+
+    @OneToMany(mappedBy = "member")
+    private List<Order> orders = new ArrayList<>();
+
 
 //    @OneToMany(mappedBy = "member")
 //    private List<Order> orders = new ArrayList<>();

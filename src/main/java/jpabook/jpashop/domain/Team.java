@@ -21,9 +21,6 @@ public class Team {
 
     private String name;
 
-    @OneToMany // mapped by : 나의 반대편 사이드의 변수이름
-    @JoinColumn(name = "team_id")
-    private List<Member> members = new ArrayList<>();
 
 
 

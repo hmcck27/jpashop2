@@ -16,7 +16,7 @@
             <property name="hibernate.use_sql_comments" value="true"/>
 
             <!-- 밑의 프로퍼티가 ddl을 어플리케이션 로드 시점에 자동으로 날려주는 옵션이다. -->
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="create" />
         </properties>
     </persistence-unit>
 </persistence>

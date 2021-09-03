@@ -1,12 +1,11 @@
 package jpabook.jpashop;
 
-import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.OrderItem;
-import jpabook.jpashop.domain.Team;
+import jpabook.jpashop.domain.*;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class JpaMain {
@@ -30,15 +29,37 @@ public class JpaMain {
         try  {
 
             Member member = new Member();
-            member.setName("member1");
+            member.setName("testUser");
+
             em.persist(member);
 
-            Team team = new Team();
-            team.setName("teamA");
+            em.flush();
+            em.clear();
 
-            team.getMembers().add(member);
+            // 영속성 컨텍스트 비우기
 
-            em.persist(team);
+//            Member findMember = em.find(Member.class, member.getId());
+//            System.out.println("findMember.getName() = " + findMember.getName());
+
+            Member findMember = em.getReference(Member.class, member.getId());
+
+
+
+            // 프록시 클래스 갖고 오기
+           System.out.println("findMember.getClass() = " + findMember.getClass());
+            System.out.println("findMember.getName() = " + findMember.getName());
+            
+
+//            Member member = new Member();
+//            member.setName("member1");
+//            em.persist(member);
+//
+//            Team team = new Team();
+//            team.setName("teamA");
+//
+//            team.getMembers().add(member);
+
+//            em.persist(team);
 
             // member 저장
             /*
