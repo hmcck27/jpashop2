@@ -1,12 +1,15 @@
 package jpabook.jpashop;
 
 import jpabook.jpashop.domain.*;
+import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public class JpaMain {
 
@@ -28,98 +31,42 @@ public class JpaMain {
 
         try  {
 
-            Member member = new Member();
-            member.setName("testUser");
+            Member3 member3 = new Member3();
+            member3.setUsername("member1");
+            member3.setAddress(new Address("city1", "street", "10000"));
 
-            em.persist(member);
+            member3.getFavoriteFoods().add("치킨");
+            member3.getFavoriteFoods().add("족발");
+            member3.getFavoriteFoods().add("피자");
+
+            member3.getAddressHistory().add(new AddressEntity("old1", "street", "10000"));
+            member3.getAddressHistory().add(new AddressEntity("old2", "street", "10000"));
+
+            // persist를 해도 전이가 되서 딸린 객체들도 같이 들어간다.
+            em.persist(member3);
+
 
             em.flush();
             em.clear();
 
-            // 영속성 컨텍스트 비우기
-
-//            Member findMember = em.find(Member.class, member.getId());
-//            System.out.println("findMember.getName() = " + findMember.getName());
-
-            Member findMember = em.getReference(Member.class, member.getId());
+            System.out.println("======== start ============");
+            Member3 findMember = em.find(Member3.class, member3.getId());
 
 
-
-            // 프록시 클래스 갖고 오기
-           System.out.println("findMember.getClass() = " + findMember.getClass());
-            System.out.println("findMember.getName() = " + findMember.getName());
-            
-
-//            Member member = new Member();
-//            member.setName("member1");
-//            em.persist(member);
+//            Address a = findMember.getAddress();
+//            findMember.setAddress(new Address("new1", a.getStreet(), a.getZipcode()));
 //
-//            Team team = new Team();
-//            team.setName("teamA");
-//
-//            team.getMembers().add(member);
+//            findMember.getFavoriteFoods().remove("치킨");
+//            findMember.getFavoriteFoods().add("한식");
 
-//            em.persist(team);
+//            findMember.getAddressHistory().remove(new AddressEntity("old1", "street", "10000"));
+//            findMember.getAddressHistory().add(new AddressEntity("newCity", "street", "10000"));
 
-            // member 저장
-            /*
-            Member member = new Member();
-            member.setId(2L);
-            member.setName("helloB");
-            em.persist(member);
-            */
-
-            /**
-             * member 단건 조회
-             */
-            /*
-            Member findMember = em.find(Member.class, 1L);
-            System.out.println("findMember.id = " + findMember.getId());
-            System.out.println("findMember.name = " + findMember.getName());
-            */
-
-            /**
-             * member 전체 조회
-             * 디비에 쿼리를 날리는게 아니라, 객체에 쿼리는 날린다. 테이블이 아닌 객체가 대상이 된다.
-             * 그럼 이게 무슨 메리트가 있지 ?
-             * 사실은 큰 메리트가 있다. 페이징을 한다고 쳐보면...
-             */
-//            List<Member> findMembers = em.createQuery("select m from Member as m", Member.class)
-//                    .setFirstResult(1)
-//                    .setMaxResults(5)
-//                    .getResultList();
-//
-//            for (Member findMember : findMembers) {
-//                System.out.println("findMember.id = " + findMember.getId());
-//                System.out.println("findMember.name = " + findMember.getName());
-//            }
-
-            /**
-             * member 삭제
-             */
-            /*
-            em.remove(findMember);
-            */
-
-            /**
-             * member 수정
-             *
-             * jpa를 통해서 객체를 가져오면, 이제부터 이 객체는 jpa가 관리하는 객체이다.
-             * 이게 변경이 됬는지 안됬는지 트랜잭션이 커밋하는 시점에서 다 체크한다.
-             * 뭐가 바뀌면 커밋 직전에 업데이트 쿼리가 나감.
-             */
-            /*
-            Member member = em.find(Member.class, 1L);
-            member.setName("HelloJPA");
-            */
-
-            /**
-             * 쿼리 나감
-             */
             tx.commit();
 
         } catch (Exception e) {
             tx.rollback();
+            e.printStackTrace();
         } finally {
             // entity manager를 닫아주는게 중요하다.
             // 이게 디비 트랜잭션을 물고 작동한다.
@@ -129,114 +76,7 @@ public class JpaMain {
         // 실제 application이 끝나면 이 팩토리를 닫아줘야 한다.
         emf.close();
 
-
-//        main4();
     }
 
-//    public static void main2() {
-//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("hello");
-//        EntityManager em = emf.createEntityManager();
-//
-//        EntityTransaction entityTransaction = em.getTransaction();
-//
-//        entityTransaction.begin();
-//
-//        try {
-//
-////            // 비영속
-////            Member member = new Member();
-////            member.setId(101L);
-////            member.setName("helloJpa");
-////
-////            //영속화 (1차 캐시 저장)
-////            System.out.println("=== before persist ===");
-////            em.persist(member);
-////            System.out.println("=== after persist ===");
-//
-//            System.out.println("=== before find ===");
-//            Member findMember1 = em.find(Member.class, 101L);
-//            Member findMember2 = em.find(Member.class, 101L);
-//            System.out.println("member1.id => " + findMember1.getId());
-////            System.out.println("member1.name =>" + findMember1.getName());
-////            System.out.println("member2.id => " + findMember2.getId());
-////            System.out.println("member2.name =>" + findMember2.getName());
-//
-//            if (findMember1 == findMember2) {
-//                System.out.println("same1");
-//            }
-//            if (findMember1.equals(findMember2)) {
-//                System.out.println("same2");
-//            }
-//            if (findMember2.equals(findMember1)) {
-//                System.out.println("same3");
-//            }
-//
-//            System.out.println("=== after find ===");
-//
-//            //DB insert(1차 캐시 푸시)
-//            System.out.println("=== before commit ===");
-////            entityTransaction.commit();
-//            System.out.println("=== after commit ===");
-//        } catch (Exception e) {
-//            entityTransaction.rollback();
-//        } finally {
-//            em.close();
-//        }
-//
-//        emf.close();
-//    }
 
-//    public static void main3() {
-//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("hello");
-//        EntityManager em = emf.createEntityManager();
-//        EntityTransaction transaction = em.getTransaction();
-//        transaction.begin();
-//
-//        try {
-//
-//            Member member1 = new Member(150L, "A");
-//            Member member2 = new Member(160L, "B");
-//
-//            em.persist(member1);
-//            em.persist(member2);
-//
-//            System.out.println("===========");
-//
-//            transaction.commit();
-//
-//
-//        } catch (Exception e) {
-//            transaction.rollback();
-//
-//        } finally {
-//            em.close();
-//        }
-//        emf.close();
-//    }
-
-//    public static void main4() {
-//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("hello");
-//        EntityManager em = emf.createEntityManager();
-//        EntityTransaction transaction = em.getTransaction();
-//        transaction.begin();
-//
-//        try {
-//
-//            Member member = new Member();
-//            member.setUsername("tempUserName");
-//
-//            em.persist(member);
-//
-////            member.setUsername("ZZZZZ");
-//            transaction.commit();
-//
-//
-//        } catch (Exception e) {
-//            transaction.rollback();
-//
-//        } finally {
-//            em.close();
-//        }
-//        emf.close();
-//    }
 }

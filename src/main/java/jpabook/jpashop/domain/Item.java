@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn
 public abstract class Item extends BaseEntity{
 
     @Id
